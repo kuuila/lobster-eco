@@ -1,0 +1,7 @@
+id,name,icon,type,description,daily_limit,required_level,reward_pearls,reward_exp,reward_shells,special_rule_1,special_rule_2,special_rule_3
+dungeon_survival,生存试炼,⚡,survival,连续战斗看能坚持多久,3,1,100,50,3,HP不回复,击败敌人获得少量回复,每5波奖励增加
+dungeon_timed,限时挑战,⏱️,timed,在时间内击败尽可能多的敌人,3,3,150,80,5,限时60秒,击杀数决定奖励,连击加成分数
+dungeon_boss,BOSS巢穴,👹,boss,挑战强大的BOSS,2,5,300,150,10,BOSS HP翻倍,BOSS有特殊技能,首通额外奖励
+dungeon_challenge,极限挑战,🔥,challenge,在极端条件下战斗,1,7,500,250,15,起始只有1HP,无法购买海草,击败敌人恢复1HP
+dungeon_treasure,宝藏洞穴,💰,challenge,大量珍珠等你来拿,2,4,500,100,5,敌人掉落珍珠翻倍,无法使用掠夺,敌人攻击力降低
+dungeon_arena,竞技场,🏟️,challenge,与AI高手对战,3,6,200,120,8,AI难度大幅提升,AI会预判你的行动,胜利获得额外奖励

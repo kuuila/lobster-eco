@@ -1,0 +1,10 @@
+id,chapter_id,stage_number,name,enemy_name,enemy_avatar,enemy_hp,enemy_level,enemy_ai,required_level,first_clear_pearls,first_clear_exp,first_clear_shells,star_condition_1,star_condition_2,star_condition_3
+stage_1_1,chapter_1,1,初次探险,小虾米,🦐,2,1,ai_easy,1,20,10,0,获得胜利,剩余2HP以上,3回合内结束
+stage_1_2,chapter_1,2,深海巡逻,巡逻蟹,🦀,2,1,ai_easy,1,25,15,0,获得胜利,剩余2HP以上,使用3次攻击
+stage_1_3,chapter_1,3,龙虾先锋,龙虾先锋,🦞,3,2,ai_normal,1,30,20,0,获得胜利,剩余2HP以上,不使用海草
+stage_1_4,chapter_1,4,深海猎手,猎手鲨,🦈,3,2,ai_normal,2,35,25,0,获得胜利,剩余1HP以上,5回合内结束
+stage_1_5,chapter_1,5,浅海霸主,浅海霸主,👑,4,3,ai_boss,2,100,50,2,获得胜利,剩余2HP以上,无伤通关
+stage_2_1,chapter_2,1,珊瑚卫士,珊瑚卫,🪸,3,3,ai_normal,3,40,30,0,获得胜利,剩余2HP以上,使用掠夺2次
+stage_2_2,chapter_2,2,毒刺水母,毒水母,🎐,3,4,ai_normal,3,50,35,0,获得胜利,剩余2HP以上,防御成功2次
+stage_2_3,chapter_2,3,海龟将军,龟将军,🐢,5,4,ai_hard,4,60,40,0,获得胜利,剩余2HP以上,使用大钳击败
+stage_2_4,chapter_2,4,珊瑚女王,珊瑚女王,👸,5,5,ai_boss,5,150,80,5,获得胜利,剩余2HP以上,无伤通关

@@ -1,0 +1,12 @@
+id,name,icon,category,cost_type,cost_amount,gain_type,gain_amount,damage,description
+earn,采集珍珠,💎,gather,,,,coins,1,0,采集获得1珍珠
+buy_knife,获取小钳,🦠,gather,coins,1,knives,1,0,消耗1珍珠获得小钳
+buy_gun,获取大钳,🐙,gather,coins,2,guns,1,0,消耗2珍珠获得大钳
+buy_potion,获取海草,🌿,gather,coins,3,potions,1,0,消耗3珍珠获得海草
+use_knife,小钳攻击,⚔️,attack,knives,1,power,3,1,消耗1小钳造成1伤害
+use_gun,大钳攻击,🎯,attack,guns,1,power,5,2,消耗1大钳造成2伤害且破甲
+steal_1,小掠夺,🦀,steal,power,3,,,0,消耗3气泡掠夺1资源
+steal_2,大掠夺,🦠,steal,power,5,,,0,消耗5气泡掠夺2资源
+defend,硬壳防御,🛡️,defense,,,power,1,0,获得护盾且+1气泡
+dodge,闪避,💨,defense,power,1,,,0,消耗1气泡获得30%闪避
+counter,反击,⚡,defense,power,2,,,0,消耗2气泡受击反击1伤害

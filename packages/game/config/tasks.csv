@@ -1,0 +1,14 @@
+id,type,name,icon,description,target,reward_pearls,reward_exp,reward_shells,category
+daily_battle_1,daily,初战告捷,⚔️,完成1场战斗,1,20,10,0,战斗
+daily_battle_3,daily,战斗达人,🏆,完成3场战斗,3,50,30,0,战斗
+daily_win_1,daily,胜利者,🎉,赢得1场对战,1,30,20,0,战斗
+daily_earn_10,daily,采集达人,💎,采集10珍珠,10,25,15,0,资源
+daily_upgrade_1,daily,强化武器,🛠️,购买1把武器,1,15,10,0,养成
+daily_login,daily,每日登录,📅,每日签到,1,50,20,1,福利
+main_battle_10,main,身经百战,⚔️,累计完成10场战斗,10,200,100,0,战斗
+main_battle_50,main,战斗大师,🎖️,累计完成50场战斗,50,500,300,5,战斗
+main_win_10,main,常胜将军,🏆,累计胜利10场,10,300,150,0,战斗
+main_win_50,main,深海霸主,👑,累计胜利50场,50,1000,500,10,战斗
+ach_first_win,achievement,首胜,🎉,获得第一场胜利,1,100,50,0,成就
+ach_battle_100,achievement,百战百胜,💯,累计完成100场战斗,100,1000,500,10,成就
+ach_win_streak_5,achievement,五连胜,🔥,连续获得5场胜利,5,300,200,3,成就

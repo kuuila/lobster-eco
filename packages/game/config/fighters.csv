@@ -1,0 +1,6 @@
+id,name,hp,coins,knives,guns,potions,shield,ai_difficulty,description
+player,玩家,3,2,0,0,0,false,easy,玩家角色
+ai_easy,小虾米,2,2,0,0,0,false,easy,新手AI
+ai_normal,龙虾战士,3,2,0,0,0,false,normal,普通AI
+ai_hard,龙虾精英,4,2,1,0,0,false,hard,精英AI
+ai_boss,龙虾霸主,5,3,0,1,0,true,boss,BOSS级AI

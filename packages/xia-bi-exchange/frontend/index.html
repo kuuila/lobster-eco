@@ -1,0 +1,819 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🦐 虾币交易所 - XiaBi Exchange</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: system-ui, -apple-system, sans-serif; background: linear-gradient(135deg, #0a0e17 0%, #1a1f2e 100%); color: #f0f4f8; min-height: 100vh; }
+        
+        header { background: rgba(17, 24, 39, 0.95); backdrop-filter: blur(10px); padding: 1rem 2rem; border-bottom: 1px solid #2d3748; position: sticky; top: 0; z-index: 100; }
+        .header-content { max-width: 1400px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; }
+        .logo { font-size: 1.5rem; font-weight: 700; display: flex; align-items: center; gap: 0.5rem; }
+        .logo-text { background: linear-gradient(135deg, #ef4444, #8b5cf6); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .header-stats { display: flex; gap: 2rem; }
+        .stat-item { text-align: center; }
+        .stat-value { font-size: 1.25rem; font-weight: 600; color: #22c55e; }
+        .stat-label { font-size: 0.75rem; color: #94a3b8; }
+        .btn { padding: 0.5rem 1rem; border-radius: 0.5rem; border: none; cursor: pointer; font-weight: 500; transition: all 0.2s; }
+        .btn-primary { background: linear-gradient(135deg, #ef4444, #8b5cf6); color: white; }
+        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 4px 20px rgba(139, 92, 246, 0.4); }
+        .btn-outline { background: transparent; border: 1px solid #2d3748; color: #f0f4f8; }
+        .btn-outline:hover { background: #1a2234; }
+        
+        main { max-width: 1400px; margin: 0 auto; padding: 1.5rem; }
+        
+        /* 用户面板 */
+        .user-panel { background: linear-gradient(135deg, #1a2234 0%, #111827 100%); border: 1px solid #2d3748; border-radius: 1rem; padding: 1.5rem; margin-bottom: 1.5rem; display: none; animation: slideIn 0.3s ease; }
+        .user-panel.active { display: block; }
+        @keyframes slideIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+        .user-header { display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 1rem; margin-bottom: 1rem; }
+        .user-info h2 { font-size: 1.25rem; display: flex; align-items: center; gap: 0.5rem; }
+        .user-balance { text-align: right; }
+        .total-balance { font-size: 2rem; font-weight: 700; color: #22c55e; }
+        .profit { font-size: 1rem; }
+        .profit.up { color: #22c55e; }
+        .profit.down { color: #ef4444; }
+        
+        /* 钱包 */
+        .section-title { font-size: 1rem; margin: 1rem 0 0.75rem; display: flex; align-items: center; gap: 0.5rem; }
+        .portfolio-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 0.75rem; }
+        .wallet-item { background: #111827; border-radius: 0.75rem; padding: 1rem; display: flex; align-items: center; gap: 0.75rem; transition: all 0.2s; }
+        .wallet-item:hover { transform: translateY(-2px); background: #1f2937; }
+        .wallet-icon { width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.25rem; flex-shrink: 0; }
+        .wallet-info { flex: 1; min-width: 0; }
+        .wallet-symbol { font-weight: 600; font-size: 0.875rem; }
+        .wallet-balance { font-size: 1rem; font-weight: 700; font-family: monospace; }
+        .wallet-value { font-size: 0.75rem; color: #94a3b8; }
+        
+        /* 交易记录 */
+        .orders-list { max-height: 300px; overflow-y: auto; }
+        .order-item { display: flex; align-items: center; gap: 1rem; padding: 0.75rem; border-bottom: 1px solid #2d3748; font-size: 0.875rem; }
+        .order-item:last-child { border-bottom: none; }
+        .order-icon { width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1rem; }
+        .order-side { font-weight: 600; }
+        .order-side.buy { color: #22c55e; }
+        .order-side.sell { color: #ef4444; }
+        .order-details { flex: 1; }
+        .order-time { font-size: 0.75rem; color: #94a3b8; }
+        .order-total { font-weight: 600; text-align: right; }
+        
+        /* 标签页 */
+        .tabs { display: flex; gap: 0.5rem; margin-bottom: 1rem; border-bottom: 1px solid #2d3748; padding-bottom: 0.5rem; }
+        .tab { padding: 0.5rem 1.5rem; border-radius: 0.5rem; cursor: pointer; background: transparent; color: #94a3b8; border: none; font-weight: 500; transition: all 0.2s; }
+        .tab:hover { color: #f0f4f8; }
+        .tab.active { background: linear-gradient(135deg, #8b5cf6, #6366f1); color: white; }
+        
+        /* 筛选 */
+        .filters { display: flex; gap: 0.5rem; margin-bottom: 1rem; flex-wrap: wrap; }
+        .filter-btn { padding: 0.5rem 1rem; border-radius: 2rem; border: 1px solid #2d3748; background: transparent; color: #94a3b8; cursor: pointer; font-size: 0.8rem; transition: all 0.2s; }
+        .filter-btn:hover { border-color: #8b5cf6; color: #f0f4f8; }
+        .filter-btn.active { background: #8b5cf6; border-color: #8b5cf6; color: white; }
+        
+        /* 币种卡片 */
+        .coins-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 1rem; }
+        .coin-card { background: linear-gradient(135deg, #1a2234 0%, #111827 100%); border: 1px solid #2d3748; border-radius: 1rem; padding: 1rem; cursor: pointer; transition: all 0.3s; position: relative; overflow: hidden; }
+        .coin-card:hover { transform: translateY(-4px); border-color: #8b5cf6; box-shadow: 0 10px 40px rgba(139, 92, 246, 0.3); }
+        .coin-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; background: var(--coin-color, #8b5cf6); }
+        .coin-header { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.75rem; }
+        .coin-icon { width: 48px; height: 48px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; box-shadow: 0 4px 15px rgba(0,0,0,0.3); }
+        .coin-title { flex: 1; }
+        .coin-name { font-weight: 600; font-size: 1rem; }
+        .coin-symbol { color: #94a3b8; font-size: 0.75rem; }
+        .coin-price { font-size: 1.25rem; font-weight: 700; margin-bottom: 0.25rem; }
+        .coin-change { font-size: 0.875rem; font-weight: 500; }
+        .up { color: #22c55e; }
+        .down { color: #ef4444; }
+        .coin-volume { font-size: 0.75rem; color: #94a3b8; margin-top: 0.5rem; }
+        
+        /* 交易面板 */
+        .trading-section { display: none; grid-template-columns: 1fr 380px; gap: 1.5rem; margin-top: 1.5rem; animation: slideIn 0.3s ease; }
+        .trading-section.active { display: grid; }
+        @media (max-width: 900px) { .trading-section { grid-template-columns: 1fr; } }
+        
+        .market-panel { background: linear-gradient(135deg, #1a2234 0%, #111827 100%); border: 1px solid #2d3748; border-radius: 1rem; padding: 1.5rem; }
+        .coin-detail-header { display: flex; align-items: center; gap: 1rem; margin-bottom: 1.5rem; padding-bottom: 1rem; border-bottom: 1px solid #2d3748; }
+        .coin-detail-icon { width: 56px; height: 56px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.75rem; box-shadow: 0 4px 20px rgba(0,0,0,0.4); }
+        .coin-detail-info h2 { font-size: 1.5rem; }
+        .coin-detail-info .symbol { color: #94a3b8; font-size: 0.9rem; }
+        .coin-detail-price { text-align: right; margin-left: auto; }
+        .current-price { font-size: 2rem; font-weight: 700; }
+        
+        .orderbook { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+        .orderbook-side h4 { font-size: 0.8rem; margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem; }
+        .orderbook-side.ask h4 { color: #ef4444; }
+        .orderbook-side.bid h4 { color: #22c55e; }
+        .order-row { display: flex; justify-content: space-between; padding: 0.25rem 0.5rem; font-size: 0.8rem; font-family: monospace; border-radius: 0.25rem; }
+        .order-row:hover { background: rgba(255,255,255,0.05); }
+        
+        .trade-form { background: linear-gradient(135deg, #1a2234 0%, #111827 100%); border: 1px solid #2d3748; border-radius: 1rem; padding: 1.5rem; height: fit-content; position: sticky; top: 100px; }
+        .trade-tabs { display: flex; gap: 0.5rem; margin-bottom: 1rem; }
+        .trade-tab { flex: 1; padding: 0.75rem; border-radius: 0.5rem; border: none; cursor: pointer; font-weight: 600; font-size: 1rem; transition: all 0.2s; }
+        .trade-tab.buy { background: rgba(34, 197, 94, 0.2); color: #22c55e; }
+        .trade-tab.buy.active { background: #22c55e; color: white; }
+        .trade-tab.sell { background: rgba(239, 68, 68, 0.2); color: #ef4444; }
+        .trade-tab.sell.active { background: #ef4444; color: white; }
+        
+        .trade-balance { font-size: 0.9rem; color: #94a3b8; margin-bottom: 1rem; padding: 0.75rem; background: #111827; border-radius: 0.5rem; }
+        .trade-balance span { color: #f0f4f8; font-weight: 600; }
+        .trade-input-group { margin-bottom: 1rem; }
+        .trade-input-label { display: flex; justify-content: space-between; font-size: 0.875rem; color: #94a3b8; margin-bottom: 0.5rem; }
+        .trade-input { width: 100%; padding: 0.875rem; background: #111827; border: 1px solid #2d3748; border-radius: 0.5rem; color: #f0f4f8; font-size: 1rem; transition: all 0.2s; }
+        .trade-input:focus { outline: none; border-color: #8b5cf6; box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.2); }
+        .trade-btn { width: 100%; padding: 1rem; border-radius: 0.5rem; border: none; cursor: pointer; font-size: 1.1rem; font-weight: 600; transition: all 0.2s; margin-top: 0.5rem; }
+        .trade-btn.buy { background: linear-gradient(135deg, #22c55e, #16a34a); color: white; }
+        .trade-btn.sell { background: linear-gradient(135deg, #ef4444, #dc2626); color: white; }
+        .trade-btn:hover { transform: translateY(-2px); box-shadow: 0 4px 20px rgba(0,0,0,0.3); }
+        
+        /* 排行榜 */
+        .leaderboard { background: #1a2234; border-radius: 1rem; overflow: hidden; }
+        .leaderboard-header { display: grid; grid-template-columns: 60px 1fr 120px 100px 100px; padding: 1rem; background: #111827; font-weight: 600; font-size: 0.875rem; }
+        .leaderboard-row { display: grid; grid-template-columns: 60px 1fr 120px 100px 100px; padding: 0.75rem 1rem; border-bottom: 1px solid #2d3748; align-items: center; }
+        .leaderboard-row:last-child { border-bottom: none; }
+        .leaderboard-row:hover { background: rgba(139, 92, 246, 0.1); }
+        .rank { font-weight: 700; font-size: 1.25rem; }
+        .rank-1 { color: #ffd700; }
+        .rank-2 { color: #c0c0c0; }
+        .rank-3 { color: #cd7f32; }
+        
+        /* 弹窗 */
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.85); justify-content: center; align-items: center; z-index: 1000; }
+        .modal.active { display: flex; animation: fadeIn 0.2s ease; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        .modal-content { background: linear-gradient(135deg, #1a2234 0%, #111827 100%); border-radius: 1rem; padding: 2rem; width: 90%; max-width: 420px; border: 1px solid #2d3748; }
+        .modal-title { font-size: 1.5rem; margin-bottom: 1.5rem; text-align: center; }
+        .form-group { margin-bottom: 1rem; }
+        .form-label { display: block; margin-bottom: 0.5rem; color: #94a3b8; font-size: 0.875rem; }
+        .form-input { width: 100%; padding: 0.875rem; background: #111827; border: 1px solid #2d3748; border-radius: 0.5rem; color: #f0f4f8; font-size: 1rem; }
+        .form-input:focus { outline: none; border-color: #8b5cf6; }
+        .modal-btns { display: flex; gap: 0.75rem; margin-top: 1.5rem; }
+        .modal-btns .btn { flex: 1; padding: 0.875rem; }
+        .hint { text-align: center; margin-top: 1rem; font-size: 0.8rem; color: #94a3b8; }
+        
+        /* Toast */
+        .toast { position: fixed; bottom: 2rem; left: 50%; transform: translateX(-50%) translateY(100px); padding: 1rem 2rem; background: #1a2234; border: 1px solid #22c55e; border-radius: 1rem; font-weight: 500; transition: all 0.3s; z-index: 1001; }
+        .toast.show { transform: translateX(-50%) translateY(0); }
+        .toast.error { border-color: #ef4444; }
+        
+        /* 加载 */
+        .loading { display: flex; justify-content: center; padding: 2rem; }
+        .spinner { width: 40px; height: 40px; border: 3px solid #2d3748; border-top-color: #8b5cf6; border-radius: 50%; animation: spin 1s linear infinite; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        
+        /* 空状态 */
+        .empty { text-align: center; padding: 2rem; color: #94a3b8; }
+        
+        footer { text-align: center; padding: 2rem; color: #64748b; font-size: 0.8rem; border-top: 1px solid #1e293b; margin-top: 2rem; }
+        
+        /* 响应式 */
+        @media (max-width: 768px) {
+            .header-stats { display: none; }
+            .user-header { flex-direction: column; text-align: center; }
+            .user-balance { text-align: center; }
+            .leaderboard-header, .leaderboard-row { grid-template-columns: 50px 1fr 80px; }
+            .leaderboard-header > *:nth-child(4), .leaderboard-header > *:nth-child(5),
+            .leaderboard-row > *:nth-child(4), .leaderboard-row > *:nth-child(5) { display: none; }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="header-content">
+            <div class="logo">
+                <span>🦐</span>
+                <span class="logo-text">虾币交易所</span>
+            </div>
+            <div class="header-stats">
+                <div class="stat-item">
+                    <div class="stat-value" id="totalUsers">-</div>
+                    <div class="stat-label">玩家</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" id="totalCoins">-</div>
+                    <div class="stat-label">币种</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" id="totalVolume">-</div>
+                    <div class="stat-label">交易额</div>
+                </div>
+            </div>
+            <div class="header-actions">
+                <span id="userInfo" style="display: none;">
+                    👤 <span id="username"></span>
+                    <button class="btn btn-outline" onclick="logout()">退出</button>
+                </span>
+                <button class="btn btn-primary" id="loginBtn" onclick="showLoginModal()">登录 / 注册</button>
+            </div>
+        </div>
+    </header>
+
+    <main>
+        <!-- 用户面板 -->
+        <section class="user-panel" id="userPanel">
+            <div class="user-header">
+                <div class="user-info">
+                    <h2>👤 <span id="panelUsername">用户</span></h2>
+                    <div style="font-size: 0.875rem; color: #94a3b8; margin-top: 0.5rem;">
+                        初始资金: <span id="initialCapital">-</span> USDT
+                    </div>
+                </div>
+                <div class="user-balance">
+                    <div style="font-size: 0.875rem; color: #94a3b8;">总资产</div>
+                    <div class="total-balance">$<span id="totalValue">0.00</span></div>
+                    <div class="profit" id="profitDisplay">+$0.00 (+0.00%)</div>
+                </div>
+            </div>
+            
+            <h4 class="section-title">💰 我的钱包</h4>
+            <div class="portfolio-grid" id="walletsGrid">
+                <div class="loading"><div class="spinner"></div></div>
+            </div>
+            
+            <h4 class="section-title">📊 交易记录</h4>
+            <div class="orders-list" id="ordersList">
+                <div class="empty">暂无交易记录</div>
+            </div>
+        </section>
+
+        <!-- 标签页 -->
+        <div class="tabs">
+            <button class="tab active" data-tab="market" onclick="switchTab('market')">📈 市场</button>
+            <button class="tab" data-tab="leaderboard" onclick="switchTab('leaderboard')">🏆 排行榜</button>
+        </div>
+
+        <!-- 市场页面 -->
+        <div id="tab-market">
+            <div class="filters" id="categoryFilters">
+                <button class="filter-btn active" data-category="all">全部</button>
+            </div>
+            <div class="coins-grid" id="coinsGrid">
+                <div class="loading"><div class="spinner"></div></div>
+            </div>
+
+            <!-- 交易面板 -->
+            <div class="trading-section" id="tradingSection">
+                <div class="market-panel">
+                    <div class="coin-detail-header">
+                        <div class="coin-detail-icon" id="detailIcon">🪙</div>
+                        <div class="coin-detail-info">
+                            <h2 id="detailName">币种名称</h2>
+                            <span class="symbol" id="detailSymbol">SYMBOL</span>
+                        </div>
+                        <div class="coin-detail-price">
+                            <div class="current-price">$<span id="detailPrice">0.00</span></div>
+                            <div id="detailChange" class="up">+0.00%</div>
+                        </div>
+                    </div>
+                    <div class="orderbook">
+                        <div class="orderbook-side ask">
+                            <h4>📉 卖出价</h4>
+                            <div id="asksList"></div>
+                        </div>
+                        <div class="orderbook-side bid">
+                            <h4>📈 买入价</h4>
+                            <div id="bidsList"></div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="trade-form">
+                    <div class="trade-tabs">
+                        <button class="trade-tab buy active" onclick="setTradeSide('buy')">买入</button>
+                        <button class="trade-tab sell" onclick="setTradeSide('sell')">卖出</button>
+                    </div>
+                    <div class="trade-balance">
+                        可用余额: <span id="availableBalance">0.00</span> <span id="balanceCoin">USDT</span>
+                    </div>
+                    <div class="trade-input-group">
+                        <div class="trade-input-label">
+                            <span>价格</span>
+                            <span id="priceHint"></span>
+                        </div>
+                        <input type="number" class="trade-input" id="tradePrice" placeholder="输入价格" step="0.0001">
+                    </div>
+                    <div class="trade-input-group">
+                        <div class="trade-input-label"><span>数量</span></div>
+                        <input type="number" class="trade-input" id="tradeAmount" placeholder="输入数量" step="0.0001">
+                    </div>
+                    <div class="trade-input-group">
+                        <div class="trade-input-label"><span>总额</span></div>
+                        <input type="number" class="trade-input" id="tradeTotal" placeholder="总额" readonly>
+                    </div>
+                    <button class="trade-btn buy" id="tradeBtn" onclick="submitTrade()">买入</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 排行榜页面 -->
+        <div id="tab-leaderboard" style="display: none;">
+            <div class="leaderboard">
+                <div class="leaderboard-header">
+                    <span>排名</span>
+                    <span>玩家</span>
+                    <span>总资产</span>
+                    <span>收益</span>
+                    <span>收益率</span>
+                </div>
+                <div id="leaderboardBody">
+                    <div class="loading"><div class="spinner"></div></div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- 登录弹窗 -->
+    <div class="modal" id="loginModal">
+        <div class="modal-content">
+            <h3 class="modal-title">🦐 登录 / 注册</h3>
+            <div class="form-group">
+                <label class="form-label">用户名</label>
+                <input type="text" class="form-input" id="loginUsername" placeholder="输入用户名">
+            </div>
+            <div class="form-group">
+                <label class="form-label">密码</label>
+                <input type="password" class="form-input" id="loginPassword" placeholder="输入密码">
+            </div>
+            <div class="modal-btns">
+                <button class="btn btn-primary" onclick="login()">登录</button>
+                <button class="btn btn-outline" onclick="register()">注册</button>
+            </div>
+            <p class="hint">注册即送 1-11万 USDT + 随机虾壳币</p>
+            <button class="btn btn-outline" style="width: 100%; margin-top: 1rem;" onclick="closeLoginModal()">关闭</button>
+        </div>
+    </div>
+
+    <div class="toast" id="toast"></div>
+
+    <footer>
+        <p>🦐 虾币交易所 - 虚拟货币演示系统 | 仅供学习交流，不涉及真实资产</p>
+    </footer>
+
+    <script>
+        // 全局状态
+        let currentUser = null;
+        let coins = [];
+        let currentCoin = null;
+        let tradeSide = 'buy';
+        let wallets = [];
+        let priceUpdateInterval = null;
+
+        // 币种图标映射
+        const coinIcons = {
+            'SHA3': '🦐', 'USDT': '💵',
+            'TECH': ['⚛️', '🤖', '🧠', '☁️', '💾', '🖥️', '📜', '🗄️', '🌐', '📡'],
+            'GAME': ['🎮', '🌐', '🎨', '🏠', '⚔️', '🏆', '👤', '🎭', '🛡️', '🏅'],
+            'PET': ['🐱', '🐕', '🐰', '🐉', '🦅', '🦄', '🐼', '🐨', '🐧', '🦊'],
+            'ELE': ['🥇', '🥈', '🥉', '🔥', '💧', '🌍', '💨', '⚡', '✨', '🌑'],
+            'STAR': ['☿', '♀', '🌍', '♂', '♃', '🪐', '⛢', '♆', '⯓', '☀️'],
+            'MYTH': ['⚡', '🦉', '🔱', '💀', '🎵', '⚔️', '👑', '🔨', '👡', '❤️'],
+            'EAST': ['🔨', '👩', '☯️', '🌾', '👑', '🔥', '⚔️', '🏹', '🌙', '🏯'],
+            'FOOD': ['🧋', '🍲', '🍖', '🍣', '🍕', '🍔', '🍜', '🍗', '☕', '🍰'],
+            'ART': ['🖼️', '🎵', '💃', '🎭', '🗿', '📷', '🎬', '📜', '✒️', '🏛️'],
+            'TIME': ['⏱️', '⏰', '🕐', '📅', '📆', '🗓️', '🎂', '⏳', '🏆', '♾️']
+        };
+
+        function getCoinIcon(symbol, category) {
+            if (symbol === 'SHA3') return coinIcons['SHA3'];
+            if (symbol === 'USDT') return coinIcons['USDT'];
+            const icons = coinIcons[category];
+            if (!icons) return '🪙';
+            const idx = parseInt(symbol.split('-')[1] || 1) - 1;
+            return icons[idx] || icons[0] || '🪙';
+        }
+
+        // 初始化
+        document.addEventListener('DOMContentLoaded', () => {
+            loadStats();
+            loadCategories();
+            loadCoins();
+            checkLogin();
+            
+            // 价格输入联动
+            document.getElementById('tradePrice').addEventListener('input', calculateTotal);
+            document.getElementById('tradeAmount').addEventListener('input', calculateTotal);
+            
+            // 定时刷新价格
+            setInterval(() => loadCoins(true), 10000);
+        });
+
+        // 加载统计
+        async function loadStats() {
+            try {
+                const res = await fetch('/api/stats');
+                const data = await res.json();
+                document.getElementById('totalUsers').textContent = data.total_users || 0;
+                document.getElementById('totalCoins').textContent = data.total_coins || 0;
+                document.getElementById('totalVolume').textContent = formatNum(data.total_volume || 0);
+            } catch (e) {}
+        }
+
+        // 加载分类
+        async function loadCategories() {
+            try {
+                const res = await fetch('/api/categories');
+                const data = await res.json();
+                const container = document.getElementById('categoryFilters');
+                container.innerHTML = data.map(c => 
+                    `<button class="filter-btn ${c.id === 'all' ? 'active' : ''}" onclick="filterCoins('${c.id}')">${c.name}</button>`
+                ).join('');
+            } catch (e) {}
+        }
+
+        // 加载币种
+        async function loadCoins(silent = false) {
+            try {
+                const res = await fetch('/api/coins');
+                coins = await res.json();
+                if (!silent) renderCoins(coins);
+                if (currentCoin) {
+                    const updated = coins.find(c => c.symbol === currentCoin.symbol);
+                    if (updated) {
+                        currentCoin = updated;
+                        document.getElementById('detailPrice').textContent = formatPrice(updated.price);
+                        const changeEl = document.getElementById('detailChange');
+                        changeEl.textContent = `${updated.change_24h >= 0 ? '+' : ''}${updated.change_24h.toFixed(2)}%`;
+                        changeEl.className = updated.change_24h >= 0 ? 'up' : 'down';
+                    }
+                }
+            } catch (e) {
+                if (!silent) document.getElementById('coinsGrid').innerHTML = '<div class="empty">加载失败</div>';
+            }
+        }
+
+        // 筛选币种
+        function filterCoins(category) {
+            document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+            event.target.classList.add('active');
+            if (category === 'all') renderCoins(coins);
+            else renderCoins(coins.filter(c => c.category === category));
+        }
+
+        // 渲染币种
+        function renderCoins(list) {
+            const grid = document.getElementById('coinsGrid');
+            grid.innerHTML = list.slice(0, 60).map(c => `
+                <div class="coin-card" style="--coin-color: ${c.color}" onclick="selectCoin('${c.symbol}')">
+                    <div class="coin-header">
+                        <div class="coin-icon" style="background: ${c.color}">${getCoinIcon(c.symbol, c.category)}</div>
+                        <div class="coin-title">
+                            <div class="coin-name">${c.name_cn}</div>
+                            <div class="coin-symbol">${c.symbol}</div>
+                        </div>
+                    </div>
+                    <div class="coin-price">$${formatPrice(c.price)}</div>
+                    <div class="coin-change ${c.change_24h >= 0 ? 'up' : 'down'}">
+                        ${c.change_24h >= 0 ? '▲' : '▼'} ${Math.abs(c.change_24h).toFixed(2)}%
+                    </div>
+                    <div class="coin-volume">24h成交量: ${formatNum(c.volume_24h)}</div>
+                </div>
+            `).join('');
+        }
+
+        // 选择币种
+        async function selectCoin(symbol) {
+            try {
+                const res = await fetch(`/api/coin/${symbol}`);
+                currentCoin = await res.json();
+                
+                document.getElementById('tradingSection').classList.add('active');
+                
+                const icon = getCoinIcon(symbol, currentCoin.category);
+                document.getElementById('detailIcon').textContent = icon;
+                document.getElementById('detailIcon').style.background = currentCoin.color;
+                document.getElementById('detailName').textContent = currentCoin.name_cn;
+                document.getElementById('detailSymbol').textContent = currentCoin.symbol;
+                document.getElementById('detailPrice').textContent = formatPrice(currentCoin.price);
+                
+                const changeEl = document.getElementById('detailChange');
+                changeEl.textContent = `${currentCoin.change_24h >= 0 ? '+' : ''}${currentCoin.change_24h.toFixed(2)}%`;
+                changeEl.className = currentCoin.change_24h >= 0 ? 'up' : 'down';
+                
+                // 订单簿
+                renderOrderbook(currentCoin.orders);
+                
+                // 设置交易价格
+                document.getElementById('tradePrice').value = currentCoin.price.toFixed(6);
+                document.getElementById('tradeAmount').value = '';
+                document.getElementById('tradeTotal').value = '';
+                
+                if (currentUser) updateTradeBalance();
+                
+                document.getElementById('tradingSection').scrollIntoView({ behavior: 'smooth' });
+            } catch (e) {
+                showToast('加载失败: ' + e.message, true);
+            }
+        }
+
+        // 渲染订单簿
+        function renderOrderbook(orders) {
+            document.getElementById('asksList').innerHTML = orders.asks.slice(0, 8).map(o => 
+                `<div class="order-row"><span class="down">${formatPrice(o.price)}</span><span>${o.amount.toFixed(4)}</span></div>`
+            ).join('');
+            document.getElementById('bidsList').innerHTML = orders.bids.slice(0, 8).map(o => 
+                `<div class="order-row"><span class="up">${formatPrice(o.price)}</span><span>${o.amount.toFixed(4)}</span></div>`
+            ).join('');
+        }
+
+        // 标签页切换
+        function switchTab(tab) {
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.querySelector(`.tab[data-tab="${tab}"]`).classList.add('active');
+            document.getElementById('tab-market').style.display = tab === 'market' ? 'block' : 'none';
+            document.getElementById('tab-leaderboard').style.display = tab === 'leaderboard' ? 'block' : 'none';
+            if (tab === 'leaderboard') loadLeaderboard();
+        }
+
+        // 加载排行榜
+        async function loadLeaderboard() {
+            try {
+                const res = await fetch('/api/leaderboard');
+                const data = await res.json();
+                document.getElementById('leaderboardBody').innerHTML = data.length ? data.map(r => `
+                    <div class="leaderboard-row">
+                        <span class="rank ${r.rank <= 3 ? 'rank-' + r.rank : ''}">${r.rank <= 3 ? ['🥇','🥈','🥉'][r.rank-1] : r.rank}</span>
+                        <span style="font-weight: 500;">${r.username}</span>
+                        <span style="font-family: monospace;">$${formatNum(r.total_value)}</span>
+                        <span class="${r.profit >= 0 ? 'up' : 'down'}">${r.profit >= 0 ? '+' : ''}${formatNum(r.profit)}</span>
+                        <span class="${r.profit_percent >= 0 ? 'up' : 'down'}">${r.profit_percent >= 0 ? '+' : ''}${r.profit_percent.toFixed(2)}%</span>
+                    </div>
+                `).join('') : '<div class="empty">暂无数据</div>';
+            } catch (e) {
+                document.getElementById('leaderboardBody').innerHTML = '<div class="empty">加载失败</div>';
+            }
+        }
+
+        // 计算总额
+        function calculateTotal() {
+            const price = parseFloat(document.getElementById('tradePrice').value) || 0;
+            const amount = parseFloat(document.getElementById('tradeAmount').value) || 0;
+            document.getElementById('tradeTotal').value = (price * amount).toFixed(2);
+        }
+
+        // 设置交易方向
+        function setTradeSide(side) {
+            tradeSide = side;
+            document.querySelectorAll('.trade-tab').forEach(t => t.classList.remove('active'));
+            document.querySelector(`.trade-tab.${side}`).classList.add('active');
+            document.getElementById('tradeBtn').className = `trade-btn ${side}`;
+            document.getElementById('tradeBtn').textContent = side === 'buy' ? '买入' : '卖出';
+            if (currentUser) updateTradeBalance();
+        }
+
+        // 更新交易余额
+        async function updateTradeBalance() {
+            if (!currentUser) return;
+            try {
+                const res = await fetch(`/api/wallets/${currentUser.id}`);
+                const data = await res.json();
+                wallets = data.wallets || [];
+                const coin = tradeSide === 'buy' ? 'USDT' : currentCoin?.symbol;
+                const wallet = wallets.find(w => w.coin_symbol === coin);
+                document.getElementById('availableBalance').textContent = (wallet?.balance || 0).toFixed(2);
+                document.getElementById('balanceCoin').textContent = coin || 'USDT';
+            } catch (e) {}
+        }
+
+        // 提交交易
+        async function submitTrade() {
+            if (!currentUser) {
+                showLoginModal();
+                return;
+            }
+            if (!currentCoin) {
+                showToast('请先选择币种', true);
+                return;
+            }
+            
+            const price = parseFloat(document.getElementById('tradePrice').value);
+            const amount = parseFloat(document.getElementById('tradeAmount').value);
+            
+            if (!price || !amount || price <= 0 || amount <= 0) {
+                showToast('请输入有效的价格和数量', true);
+                return;
+            }
+            
+            try {
+                const res = await fetch('/api/order', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        userId: currentUser.id,
+                        symbol: currentCoin.symbol,
+                        side: tradeSide,
+                        price,
+                        amount
+                    })
+                });
+                const data = await res.json();
+                
+                if (data.success) {
+                    showToast(`✅ ${tradeSide === 'buy' ? '买入' : '卖出'}成功！成交 ${data.filled.toFixed(4)} ${currentCoin.symbol}`);
+                    loadUserData();
+                    loadStats();
+                } else {
+                    showToast('❌ ' + data.error, true);
+                }
+            } catch (e) {
+                showToast('❌ 交易失败: ' + e.message, true);
+            }
+        }
+
+        // 加载用户数据
+        async function loadUserData() {
+            if (!currentUser) return;
+            
+            try {
+                // 钱包
+                const res = await fetch(`/api/wallets/${currentUser.id}`);
+                const data = await res.json();
+                
+                document.getElementById('totalValue').textContent = formatNum(data.totalValue || 0);
+                document.getElementById('panelUsername').textContent = currentUser.username;
+                
+                document.getElementById('walletsGrid').innerHTML = data.wallets?.length ? 
+                    data.wallets.map(w => `
+                        <div class="wallet-item">
+                            <div class="wallet-icon" style="background: ${w.color || '#6366f1'}">${getCoinIcon(w.coin_symbol, w.coin_symbol?.split('-')[0])}</div>
+                            <div class="wallet-info">
+                                <div class="wallet-symbol">${w.coin_symbol} ${w.name_cn || ''}</div>
+                                <div class="wallet-balance">${w.balance.toFixed(4)}</div>
+                                <div class="wallet-value">≈ $${formatNum(w.value || 0)}</div>
+                            </div>
+                        </div>
+                    `).join('') : '<div class="empty">暂无资产</div>';
+                
+                // 交易记录
+                const ordersRes = await fetch(`/api/orders/${currentUser.id}`);
+                const orders = await ordersRes.json();
+                
+                document.getElementById('ordersList').innerHTML = orders.length ? 
+                    orders.map(o => `
+                        <div class="order-item">
+                            <div class="order-icon" style="background: ${o.color || '#6366f1'}">${getCoinIcon(o.coin_symbol, o.coin_symbol?.split('-')[0])}</div>
+                            <div>
+                                <span class="order-side ${o.side}">${o.side === 'buy' ? '买入' : '卖出'}</span>
+                                <span style="margin-left: 0.5rem;">${o.coin_symbol}</span>
+                            </div>
+                            <div class="order-details">
+                                <div>${o.amount.toFixed(4)} @ $${formatPrice(o.price)}</div>
+                                <div class="order-time">${o.created_at}</div>
+                            </div>
+                            <div class="order-total ${o.side === 'buy' ? 'down' : 'up'}">
+                                ${o.side === 'buy' ? '-' : '+'}$${formatNum(o.total)}
+                            </div>
+                        </div>
+                    `).join('') : '<div class="empty">暂无交易记录</div>';
+                
+                // 资产概览
+                const portfolioRes = await fetch(`/api/portfolio/${currentUser.id}`);
+                const portfolio = await portfolioRes.json();
+                
+                document.getElementById('initialCapital').textContent = formatNum(portfolio.initial_capital || 0);
+                const profitEl = document.getElementById('profitDisplay');
+                const profit = portfolio.profit || 0;
+                const profitPercent = portfolio.profit_percent || 0;
+                profitEl.textContent = `${profit >= 0 ? '+' : ''}$${formatNum(profit)} (${profit >= 0 ? '+' : ''}${profitPercent.toFixed(2)}%)`;
+                profitEl.className = `profit ${profit >= 0 ? 'up' : 'down'}`;
+                
+            } catch (e) {
+                console.error('Load user data error:', e);
+            }
+        }
+
+        // 登录
+        async function login() {
+            const username = document.getElementById('loginUsername').value.trim();
+            const password = document.getElementById('loginPassword').value;
+            
+            if (!username || !password) {
+                showToast('请输入用户名和密码', true);
+                return;
+            }
+            
+            try {
+                const res = await fetch('/api/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, password })
+                });
+                const data = await res.json();
+                
+                if (data.success) {
+                    currentUser = data.user;
+                    localStorage.setItem('xiaBi_user', JSON.stringify(currentUser));
+                    closeLoginModal();
+                    document.getElementById('loginBtn').style.display = 'none';
+                    document.getElementById('userInfo').style.display = 'inline';
+                    document.getElementById('username').textContent = username;
+                    document.getElementById('userPanel').classList.add('active');
+                    loadUserData();
+                    showToast('✅ 登录成功！');
+                } else {
+                    showToast('❌ ' + data.error, true);
+                }
+            } catch (e) {
+                showToast('❌ 登录失败', true);
+            }
+        }
+
+        // 注册
+        async function register() {
+            const username = document.getElementById('loginUsername').value.trim();
+            const password = document.getElementById('loginPassword').value;
+            
+            if (!username || !password) {
+                showToast('请输入用户名和密码', true);
+                return;
+            }
+            
+            if (password.length < 4) {
+                showToast('密码至少4位', true);
+                return;
+            }
+            
+            try {
+                const res = await fetch('/api/register', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, password })
+                });
+                const data = await res.json();
+                
+                if (data.success) {
+                    showToast(`✅ 注册成功！获得 ${formatNum(data.initial_capital)} USDT`, false);
+                    login();
+                } else {
+                    showToast('❌ ' + data.error, true);
+                }
+            } catch (e) {
+                showToast('❌ 注册失败', true);
+            }
+        }
+
+        // 退出
+        function logout() {
+            currentUser = null;
+            localStorage.removeItem('xiaBi_user');
+            document.getElementById('loginBtn').style.display = 'inline-block';
+            document.getElementById('userInfo').style.display = 'none';
+            document.getElementById('userPanel').classList.remove('active');
+            document.getElementById('tradingSection').classList.remove('active');
+            showToast('已退出登录');
+        }
+
+        // 检查登录
+        function checkLogin() {
+            const stored = localStorage.getItem('xiaBi_user');
+            if (stored) {
+                try {
+                    currentUser = JSON.parse(stored);
+                    document.getElementById('loginBtn').style.display = 'none';
+                    document.getElementById('userInfo').style.display = 'inline';
+                    document.getElementById('username').textContent = currentUser.username;
+                    document.getElementById('userPanel').classList.add('active');
+                    loadUserData();
+                } catch (e) {
+                    localStorage.removeItem('xiaBi_user');
+                }
+            }
+        }
+
+        // 弹窗
+        function showLoginModal() {
+            document.getElementById('loginModal').classList.add('active');
+            document.getElementById('loginUsername').focus();
+        }
+        
+        function closeLoginModal() {
+            document.getElementById('loginModal').classList.remove('active');
+        }
+        
+        document.getElementById('loginModal').addEventListener('click', (e) => {
+            if (e.target.id === 'loginModal') closeLoginModal();
+        });
+
+        // Toast
+        function showToast(msg, isError = false) {
+            const t = document.getElementById('toast');
+            t.textContent = msg;
+            t.className = 'toast show' + (isError ? ' error' : '');
+            setTimeout(() => t.classList.remove('show'), 3000);
+        }
+
+        // 格式化
+        function formatPrice(n) {
+            if (n >= 1) return n.toFixed(2);
+            if (n >= 0.01) return n.toFixed(4);
+            return n.toFixed(6);
+        }
+        
+        function formatNum(n) {
+            if (n >= 1e9) return (n / 1e9).toFixed(2) + 'B';
+            if (n >= 1e6) return (n / 1e6).toFixed(2) + 'M';
+            if (n >= 1e3) return (n / 1e3).toFixed(2) + 'K';
+            return n.toFixed(2);
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,299 @@
+// Prisma Schema - 龙虾对决数据库模型
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../node_modules/.prisma/client"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+// ==================== 用户系统 ====================
+
+/// 玩家账户
+model Player {
+  id          String   @id @default(cuid())
+  name        String
+  avatar      String?  @default("🦞")
+  
+  // 资源
+  pearls      Int      @default(100)   // 珍珠 (金币)
+  shells      Int      @default(0)     // 贝壳 (高级货币)
+  experience  Int      @default(0)     // 经验值
+  level       Int      @default(1)     // 等级
+  
+  // 养成
+  skillPoints Int      @default(0)     // 技能点
+  talentPoints Int     @default(0)     // 天赋点
+  
+  // 统计
+  wins        Int      @default(0)     // 胜利场次
+  losses      Int      @default(0)     // 失败场次
+  pvpWins     Int      @default(0)     // PVP胜场
+  pveWins     Int      @default(0)     // PVE胜场
+  
+  // 时间
+  lastDaily   DateTime?               // 每日任务刷新时间
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  // 关系
+  inventory   Inventory?
+  tasks       PlayerTask[]
+  achievements PlayerAchievement[]
+  campaignProgress CampaignProgress[]
+  dungeonRuns DungeonRun[]
+  battleRooms PlayerBattleRoom[]
+  
+  @@map("players")
+}
+
+/// 玩家背包
+model Inventory {
+  id        String @id @default(cuid())
+  playerId  String @unique
+  
+  // 武器
+  knives    Int    @default(0)  // 小钳
+  guns      Int    @default(0)  // 大钳
+  
+  // 道具
+  potions   Int    @default(0)  // 海草 (复活)
+  shields   Int    @default(0)  // 硬壳 (防御)
+  
+  // 技能冷却
+  dodgeCharges   Int @default(3)  // 闪避次数
+  counterCharges Int @default(2)  // 反击次数
+  
+  player    Player @relation(fields: [playerId], references: [id], onDelete: Cascade)
+  
+  @@map("inventories")
+}
+
+// ==================== 任务系统 ====================
+
+/// 任务定义
+model Task {
+  id          String   @id @default(cuid())
+  type        String   // daily, main, achievement
+  name        String
+  description String
+  target      Int      // 目标数量
+  rewardPearls Int    @default(0)
+  rewardExp   Int      @default(0)
+  rewardShells Int     @default(0)
+  icon        String
+  order       Int      @default(0)  // 排序
+  
+  // 关系
+  playerTasks PlayerTask[]
+  
+  @@index([type])
+  @@map("tasks")
+}
+
+/// 玩家任务进度
+model PlayerTask {
+  id        String   @id @default(cuid())
+  playerId  String
+  taskId    String
+  progress  Int      @default(0)
+  completed Boolean  @default(false)
+  claimed   Boolean  @default(false)  // 是否领取奖励
+  completedAt DateTime?
+  
+  player    Player   @relation(fields: [playerId], references: [id], onDelete: Cascade)
+  task      Task     @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  
+  @@unique([playerId, taskId])
+  @@map("player_tasks")
+}
+
+/// 成就
+model Achievement {
+  id          String   @id @default(cuid())
+  name        String
+  description String
+  icon        String
+  rewardPearls Int    @default(0)
+  rewardShells Int    @default(0)
+  
+  playerAchievements PlayerAchievement[]
+  
+  @@map("achievements")
+}
+
+/// 玩家成就
+model PlayerAchievement {
+  id            String     @id @default(cuid())
+  playerId      String
+  achievementId String
+  unlockedAt    DateTime   @default(now())
+  
+  player        Player     @relation(fields: [playerId], references: [id], onDelete: Cascade)
+  achievement   Achievement @relation(fields: [achievementId], references: [id], onDelete: Cascade)
+  
+  @@unique([playerId, achievementId])
+  @@map("player_achievements")
+}
+
+// ==================== 推图系统 ====================
+
+/// 章节定义
+model Chapter {
+  id          String   @id @default(cuid())
+  number      Int      @unique
+  name        String
+  description String
+  backgroundImage String?
+  
+  stages      Stage[]
+  
+  @@map("chapters")
+}
+
+/// 关卡定义
+model Stage {
+  id          String   @id @default(cuid())
+  chapterId   String
+  number      Int      // 关卡编号
+  name        String
+  description String
+  
+  // 敌人配置
+  enemyName   String
+  enemyHp     Int      @default(3)
+  enemyLevel  Int      @default(1)
+  enemyAi     String   @default("normal") // easy, normal, hard, boss
+  
+  // 奖励
+  firstClearPearls Int @default(50)
+  firstClearExp    Int @default(100)
+  
+  // 解锁条件
+  requiredLevel Int?
+  
+  chapter     Chapter  @relation(fields: [chapterId], references: [id], onDelete: Cascade)
+  progress    CampaignProgress[]
+  
+  @@unique([chapterId, number])
+  @@map("stages")
+}
+
+/// 玩家推图进度
+model CampaignProgress {
+  id          String   @id @default(cuid())
+  playerId    String
+  stageId     String
+  
+  // 星级评价
+  stars       Int      @default(0)  // 0-3星
+  cleared     Boolean  @default(false)
+  firstClear  Boolean  @default(false)
+  
+  clearedAt   DateTime?
+  
+  player      Player   @relation(fields: [playerId], references: [id], onDelete: Cascade)
+  stage       Stage    @relation(fields: [stageId], references: [id], onDelete: Cascade)
+  
+  @@unique([playerId, stageId])
+  @@map("campaign_progress")
+}
+
+// ==================== 副本系统 ====================
+
+/// 副本定义
+model Dungeon {
+  id            String   @id @default(cuid())
+  name          String
+  description   String
+  type          String   // timed, survival, boss, challenge
+  
+  // 限制
+  dailyLimit    Int      @default(3)
+  requiredLevel Int?
+  
+  // 奖励
+  rewardPearls  Int      @default(100)
+  rewardShells  Int      @default(10)
+  rewardExp     Int      @default(200)
+  
+  // 特殊规则
+  specialRules  String?  // JSON格式规则
+  
+  icon          String
+  backgroundImage String?
+  
+  runs          DungeonRun[]
+  
+  @@map("dungeons")
+}
+
+/// 副本挑战记录
+model DungeonRun {
+  id          String   @id @default(cuid())
+  playerId    String
+  dungeonId   String
+  
+  score       Int      @default(0)
+  success     Boolean  @default(false)
+  
+  completedAt DateTime @default(now())
+  
+  player      Player   @relation(fields: [playerId], references: [id], onDelete: Cascade)
+  dungeon     Dungeon  @relation(fields: [dungeonId], references: [id], onDelete: Cascade)
+  
+  @@index([playerId, dungeonId])
+  @@map("dungeon_runs")
+}
+
+// ==================== PVP系统 ====================
+
+/// 战斗房间
+model BattleRoom {
+  id          String   @id @default(cuid())
+  type        String   // pve, pvp
+  status      String   @default("waiting") // waiting, playing, finished
+  
+  // PVP匹配
+  maxPlayers  Int      @default(2)
+  
+  // 战斗数据
+  round       Int      @default(1)
+  logs        String?  // JSON战斗日志
+  
+  createdAt   DateTime @default(now())
+  startedAt   DateTime?
+  finishedAt  DateTime?
+  
+  players     PlayerBattleRoom[]
+  
+  @@index([status])
+  @@map("battle_rooms")
+}
+
+/// 玩家房间关联
+model PlayerBattleRoom {
+  id          String   @id @default(cuid())
+  playerId    String
+  roomId      String
+  
+  // 战斗状态
+  hp          Int      @default(3)
+  power       Int      @default(0)
+  coins       Int      @default(2)
+  knives      Int      @default(0)
+  guns        Int      @default(0)
+  potions     Int      @default(0)
+  hasShield   Boolean  @default(false)
+  
+  // PVP结果
+  wins        Int      @default(0)
+  
+  player      Player     @relation(fields: [playerId], references: [id], onDelete: Cascade)
+  room        BattleRoom @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  
+  @@unique([playerId, roomId])
+  @@map("player_battle_rooms")
+}
